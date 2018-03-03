@@ -526,11 +526,8 @@ int main(int argc, char *argv[]){
     	contig file - fasta format
     	read file - fastq format
     */
-    if(argc<2)
-        printHelp();
 
-    if(strcmp(argv[1],"--help")==0 || strcmp(argv[1],"-h")==0)
-        printHelp();
+    provideHelp(argc, argv);
 
 
     contigFileName=argv[1];
