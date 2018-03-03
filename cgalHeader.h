@@ -896,3 +896,156 @@ void provideHelp (int argc, char *argv[]){
         printHelp();
     }
 }
+void createInfo(double errorProb1, long int pos1, char* contigField1, char* readString1, vector<info> &M)
+{
+    info temp1;
+    temp1.prob = errorProb1;
+    temp1.pos = pos1;
+    temp1.contigField = contigField1;
+    temp1.readLen = strlen(readString1);
+    M.push_back(temp1);
+}
+void createBs(long int pos, char* readString, char* cigar, vector<bs> &B)
+{
+    bs bstemp1;
+    bstemp1.pos = pos;
+    bstemp1.read = readString;
+    bstemp1.cigar = cigar;
+    B.push_back(bstemp1);
+}
+
+void unixSort()
+{
+    system("sort -n -k1,1 -k2,2 info.txt > infoOutput1.txt");
+}
+void writeBsToFile(vector<bs> &bsCollection, int count)
+{
+    if(count<10){
+        string s = "bsFolder2/bsOutput_";
+        string t = ".txt";
+        stringstream oss;
+        oss<< s<<count<<t;
+        cout<<oss.str()<<endl;
+        //FILE *fp;
+        //fp = fopen(oss.str().c_str(),"w");
+        ofstream bsFile(oss.str().c_str());
+        for(int i=0;i<bsCollection.size();i++)
+        {
+            bs b = bsCollection[i];
+            bsFile <<b.pos<<" "<< b.cigar<<" "<<b.read<<endl;
+            //fprintf(fp,"%ld %s %s\n",b.pos,b.cigar,b.read);
+        }
+        //fclose(fp);
+        bsFile.close();
+    }
+}
+void printGlobalMapData()
+{
+    map<long int, vector<CR> >:: iterator it;
+    ofstream gOut("globalOutput.txt");
+    for(it = globalMap.begin(); it!=globalMap.end(); it++)
+    {
+        vector<CR> tempCr = it->second;
+//        cout << "itpos" << it->first << " " << tempCr.size() << endl;
+        for(int i=0;i<tempCr.size();i++)
+        {
+            gOut<<it->first<<" "<<tempCr[i].contigNo<<" "<<tempCr[i].cigar<<" "<<tempCr[i].read<<endl;
+        }
+    }
+    gOut.close();
+    system("sort -n -k1,1 -k2,2 globalOutput.txt > globalOutSort.txt");
+}
+void writeInfoToFile(vector<info> multiMap, map<long int, string> &cigar, map<long int, string> &read)
+{
+    vector<double> cdf;
+    vector<info> data(multiMap);
+    //cout<<data.size()<<"  "<<multiMap.size()<<endl;
+    double s=0,s1=0;
+
+    for(int i=0; i<multiMap.size(); i++)
+    {
+        info temp = multiMap[i];
+        //fprintf(infoFile, "(%ld, %ld) --> %lf\n",temp.pos1,temp.pos2,temp.prob);
+        s += temp.prob;
+
+    }
+    srand(time(NULL));
+    for(int i=0; i<multiMap.size(); i++)
+    {
+        info temp = multiMap[i];
+        //cout<<temp.prob<<endl;
+        multiMap[i].prob = temp.prob/s;
+    }
+    double r = ((double) rand() / (RAND_MAX));
+    for(int i=0; i<multiMap.size(); i++)
+    {
+        info temp = multiMap[i];
+        s1 += temp.prob;
+        info temp1 = data[i];
+        if(r<=s1)
+        {
+            iteration++;
+            infoFile << temp1.contigField<< " " << temp1.pos << " " << temp1.prob << endl;
+            CR ob;
+            int number = atoi(temp1.contigField);
+            ob.contigNo = temp1.pos;
+            ob.cigar = cigar[temp1.pos];
+            ob.read = read[temp1.pos];
+            globalMap[number].push_back(ob);
+            //cout<<iteration<<endl;
+            break;
+        }
+    }
+    /*for(int i=0;i<multiMap.size();i++){
+    info temp = multiMap[i];
+    //cout<<temp.prob<<endl;
+    temp.prob = temp.prob/s;
+
+    s1 += temp.prob;
+    cdf.push_back(s1);
+    }
+    srand(time(NULL));
+    double r = ((double) rand() / (RAND_MAX));
+    for(int i=cdf.size()-1;i>=0;i--){
+    if(cdf[i]<r)
+    {
+        info temp = multiMap[i+1];
+        //cout<<temp.prob<<endl;
+
+        fprintf(infoFile, "%s %s %ld %ld %e\n",temp.contigField1,temp.contigField2,temp.pos1,temp.pos2,temp.prob);
+        break;
+    }
+    }*/
+    countInfoFile++;
+//    cout<<"Write info to file"<<endl;
+}
+
+void checkCentralTendency(deque <qE> Q2, int position) {
+
+
+    //    cout << "Here in the function " << endl;
+    vector <double> probList;
+    for(int i=0;i<Q2.size();i++){
+        probList.push_back(Q2[i].prob);
+    }
+    mapOfProbListToPosition[position] = probList;
+}
+void writeFileForCentralTendencyCheck(){
+//    cout << "Here" << endl;
+    ofstream fileWriter ("centralTendencyCheck.txt");
+    map<int , vector<double> >:: iterator it;
+    for(it = mapOfProbListToPosition.begin(); it != mapOfProbListToPosition.end();it++ ){
+        vector <double> probList = it->second;
+        int position = it->first;
+        for(int i=0;i<probList.size();i++){
+
+            if(position >= startCentralTendency && position <= endCentralTendency){
+                fileWriter << position << probList[i] << endl;
+            }
+        }
+        fileWriter << "~~~~~~~~~~~~~~~" << endl;
+    }
+    fileWriter.close();
+
+}
+
