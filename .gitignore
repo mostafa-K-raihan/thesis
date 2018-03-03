@@ -1,0 +1,14 @@
+pfx*
+data/*
+unmapped*
+global*
+*.sam
+Thesis*
+*.txt
+align
+bfastconvert
+bowtie2convert
+cgal
+obj/*
+ContigLength
+ContigName

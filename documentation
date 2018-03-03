@@ -1,0 +1,22 @@
+information :
+	double probability
+	long int position
+	char *contigField
+	long int readLength
+	char *contigName;
+	
+buildString :
+	long int position
+	string cigar
+	string read;
+	
+readCigar :
+	string cigar
+	string read
+	int contigNumber
+
+queueEntry :
+	long long int position
+	double probability
+
+
