@@ -44,6 +44,13 @@ typedef struct readCigar
     string read;
     int contigNo;
 } CR;
+int startCentralTendency = 232000;
+int endCentralTendency = 233000;
+static int countInfoFile=0;
+void printGlobalMapData();
+map<long int, vector<CR> > globalMap;
+map <int, vector<double> > mapOfProbListToPosition;
+
 
  /// edited  ///
 
@@ -107,7 +114,7 @@ long int totalCount,unCount;
 char tempCigar[500], tempMD[500];
 char noErrorCigar[500], noErrorMD[500];
 ///edited
-void writeInfoToFile(vector<info> multiMap, map<long int, string> &, map<long int, string> &);
+void writeInfoToFile(vector<info> &multiMap, map<long int, string> &, map<long int, string> &);
 void writeBsToFile(vector<bs> &bsCollection, int count);
 void createBs(long int pos, char* readString, char* cigar, vector<bs> &B);
 void createInfo(double errorProb1, long int pos1, char* contigField1, char* readString1, vector<info> &M);
@@ -955,7 +962,7 @@ void printGlobalMapData()
     gOut.close();
     system("sort -n -k1,1 -k2,2 globalOutput.txt > globalOutSort.txt");
 }
-void writeInfoToFile(vector<info> multiMap, map<long int, string> &cigar, map<long int, string> &read)
+void writeInfoToFile(vector<info> &multiMap, map<long int, string> &cigar, map<long int, string> &read)
 {
     vector<double> cdf;
     vector<info> data(multiMap);
