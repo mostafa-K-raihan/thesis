@@ -628,6 +628,7 @@ void processMapping(char *line)
     if(nh==1 && md[5]!='^')
     {
         updateInsertCounts(insertSize);
+        //cout << "Cigar " << cigar << " " << "MD" << md << " readString " << readString << " strandNO " << strandNo << endl;
         processErrorTypes(cigar,md,readString,strandNo);
         uniqueMappedReads++;
     }

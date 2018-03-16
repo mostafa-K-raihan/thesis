@@ -358,6 +358,8 @@ int main(int argc, char *argv[]) {
 	while(fgets(line1, MAX_FILE_READ, mapFile)!=NULL) {
 		if(line1[0]=='@')
 			continue;
+        //cout << count << endl;
+        //cout << line1 << endl;
 		processMapping(line1);
 		count+=1;
 	}
