@@ -69,7 +69,8 @@ FILE *contigFile;
 FILE *mapFile;
 FILE *summaryFile;
 FILE *outFile;
-ofstream infoFile; /// edited
+ofstream infoFile1; /// edited
+ofstream infoFile2;
 
 char *contigFileName;
 const char *mapFileName;
@@ -904,13 +905,14 @@ void provideHelp (int argc, char *argv[]){
         printHelp();
     }
 }
-void createInfo(double errorProb1, long int pos1, char* contigField1, char* readString1, vector<info> &M)
+void createInfo(char *qName, double errorProb1, long int pos1, char* contigField1, char* readString1, vector<info> &M)
 {
     info temp1;
     temp1.prob = errorProb1;
     temp1.pos = pos1;
     temp1.contigField = contigField1;
     temp1.readLen = strlen(readString1);
+    temp1.conName = qName;
     M.push_back(temp1);
 }
 void createBs(long int pos, char* readString, char* cigar, vector<bs> &B)
@@ -924,7 +926,11 @@ void createBs(long int pos, char* readString, char* cigar, vector<bs> &B)
 
 void unixSort()
 {
-    system("sort -n -k1,1 -k2,2 info.txt > infoOutput1.txt");
+    cout << "Sorting info1" << endl;
+    system("sort -n -k1,1 -k2,2 info1.txt > infoOutput1.txt");
+    cout << "Done\nSorting info2\n";
+    system("sort -n -k1,1 -k2,2 info2.txt > infoOutput2.txt");
+    cout << "Done" << endl;
 }
 void writeBsToFile(vector<bs> &bsCollection, int count)
 {
@@ -963,18 +969,19 @@ void printGlobalMapData()
     gOut.close();
     system("sort -n -k1,1 -k2,2 globalOutput.txt > globalOutSort.txt");
 }
-void writeInfoToFile(vector<info> &multiMap, map<long int, string> &cigar, map<long int, string> &read)
+void writeInfoToFile(vector<info> &multiMap, map<long int, string> &cigar, map<long int, string> &read, bool isFirstMultimap)
 {
     vector<double> cdf;
     vector<info> data(multiMap);
     //cout<<data.size()<<"  "<<multiMap.size()<<endl;
     double s=0,s1=0;
-
+    ostream &infoFile = (isFirstMultimap ? infoFile1 : infoFile2);
     for(int i=0; i<multiMap.size(); i++)
     {
         info temp = multiMap[i];
         //fprintf(infoFile, "(%ld, %ld) --> %lf\n",temp.pos1,temp.pos2,temp.prob);
         s += temp.prob;
+
 
     }
     srand(time(NULL));

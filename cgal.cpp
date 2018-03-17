@@ -185,8 +185,8 @@ double computeLikelihood(const char *file) {
 			cigarMap2[pos2] = cigar2;
 			readMap1[pos1] = readString1;
 			readMap2[pos2] = readString2;
-			createInfo(errorProb1, pos1, contigField1, readString1, multiMapProb1);
-			createInfo(errorProb2, pos2, contigField2, readString2, multiMapProb2);
+			createInfo(qname1, errorProb1, pos1, contigField1, readString1, multiMapProb1);
+			createInfo(qname2, errorProb2, pos2, contigField2, readString2, multiMapProb2);
 		}
 		else if(strcmp("*",preqname1)!=0 && strcmp("*",preqname2)!=0)
 		{
@@ -196,8 +196,8 @@ double computeLikelihood(const char *file) {
 			elseIfCount ++;
 			logsum+=log(sum);
 			///edited
-			writeInfoToFile(multiMapProb1, cigarMap1, readMap1);
-			writeInfoToFile(multiMapProb2, cigarMap2, readMap2);
+			writeInfoToFile(multiMapProb1, cigarMap1, readMap1, true);
+			writeInfoToFile(multiMapProb2, cigarMap2, readMap2, false);
 			if(bsCollection1.size()>10) {
 				writeBsToFile(bsCollection1,fileCount++);
 			}
@@ -214,8 +214,8 @@ double computeLikelihood(const char *file) {
 			cigarMap2[pos2] = cigar2;
 			readMap1[pos1] = readString1;
 			readMap2[pos2] = readString2;
-			createInfo(errorProb1, pos1, contigField1, readString1, multiMapProb1);
-			createInfo(errorProb2, pos2, contigField2, readString2, multiMapProb2);
+			createInfo(qname1, errorProb1, pos1, contigField1, readString1, multiMapProb1);
+			createInfo(qname2, errorProb2, pos2, contigField2, readString2, multiMapProb2);
 			createBs(pos1, readString1, cigar1, bsCollection1);
 			createBs(pos2, readString2, cigar2, bsCollection2);
 			///edited
@@ -228,8 +228,8 @@ double computeLikelihood(const char *file) {
 			cigarMap2[pos2] = cigar2;
 			readMap1[pos1] = readString1;
 			readMap2[pos2] = readString2;
-			createInfo(errorProb1, pos1, contigField1, readString1, multiMapProb1);
-			createInfo(errorProb2, pos2, contigField2, readString2, multiMapProb2);
+			createInfo(qname1, errorProb1, pos1, contigField1, readString1, multiMapProb1);
+			createInfo(qname2, errorProb2, pos2, contigField2, readString2, multiMapProb2);
 			createBs(pos1, readString1, cigar1, bsCollection1);
 			createBs(pos2, readString2, cigar2, bsCollection2);
 		}
@@ -260,7 +260,8 @@ int main(int argc, char *argv[]) {
 	provideHelp(argc, argv);
 	contigFileName=argv[1];
 	/// edited
-	infoFile.open("info.txt");
+	infoFile1.open("info1.txt");
+	infoFile2.open("info2.txt");
 	contigFile=fopen(contigFileName, "r");
 	outFile=fopen("out.txt", "w");
 	if (contigFile == NULL) {
@@ -424,7 +425,8 @@ int main(int argc, char *argv[]) {
 	*/
 	double val1=computeLikelihood(mapFileName);
 	/// edited ///
-	infoFile.close();
+	infoFile1.close();
+	infoFile2.close();
 	unixSort();
 	calculateProbability();
 	printGlobalMapData();
