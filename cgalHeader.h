@@ -26,7 +26,7 @@ typedef struct information
 {
     double prob;
     long int pos;
-    char *contigField;
+    char contigField[15];
     long int readLen;
     char* conName;
 } info;
@@ -69,8 +69,8 @@ FILE *contigFile;
 FILE *mapFile;
 FILE *summaryFile;
 FILE *outFile;
-ofstream infoFile1; /// edited
-ofstream infoFile2;
+ofstream infoFile; /// edited
+
 
 char *contigFileName;
 const char *mapFileName;
@@ -910,7 +910,7 @@ void createInfo(char *qName, double errorProb1, long int pos1, char* contigField
     info temp1;
     temp1.prob = errorProb1;
     temp1.pos = pos1;
-    temp1.contigField = contigField1;
+    strcpy(temp1.contigField, contigField1);
     temp1.readLen = strlen(readString1);
     temp1.conName = qName;
     M.push_back(temp1);
@@ -928,9 +928,7 @@ void unixSort()
 {
     cout << "Sorting info1" << endl;
     system("sort -n -k1,1 -k2,2 info1.txt > infoOutput1.txt");
-    cout << "Done\nSorting info2\n";
-    system("sort -n -k1,1 -k2,2 info2.txt > infoOutput2.txt");
-    cout << "Done" << endl;
+
 }
 void writeBsToFile(vector<bs> &bsCollection, int count)
 {
@@ -969,13 +967,14 @@ void printGlobalMapData()
     gOut.close();
     system("sort -n -k1,1 -k2,2 globalOutput.txt > globalOutSort.txt");
 }
-void writeInfoToFile(vector<info> &multiMap, map<long int, string> &cigar, map<long int, string> &read, bool isFirstMultimap)
+
+void writeInfoToFile(vector<info> &multiMap, map<long int, string> &cigar, map<long int, string> &read)
 {
+
     vector<double> cdf;
-    vector<info> data(multiMap);
+    vector<info> data(multiMap);// = getClonedMultiMap(multiMap);
     //cout<<data.size()<<"  "<<multiMap.size()<<endl;
     double s=0,s1=0;
-    ostream &infoFile = (isFirstMultimap ? infoFile1 : infoFile2);
     for(int i=0; i<multiMap.size(); i++)
     {
         info temp = multiMap[i];
@@ -996,11 +995,15 @@ void writeInfoToFile(vector<info> &multiMap, map<long int, string> &cigar, map<l
     {
         info temp = multiMap[i];
         s1 += temp.prob;
+
         info temp1 = data[i];
         if(r<=s1)
         {
             iteration++;
+
+
             infoFile << temp1.contigField<< " " << temp1.pos << " " << temp1.prob << endl;
+
             CR ob;
             int number = atoi(temp1.contigField);
             ob.contigNo = temp1.pos;

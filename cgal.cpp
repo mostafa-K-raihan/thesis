@@ -2,7 +2,7 @@
 
 
 /// edited
-void calculateProbability() {
+/*void calculateProbability() {
 	int lenIt = 0;
 	ifstream inFile("infoOutput1.txt");
 	qE q;
@@ -38,6 +38,9 @@ void calculateProbability() {
 			ofstream probf("probtest.txt");
 			queue<qE> Q;
 			deque <qE> deq;
+			if(curContig == 28){
+                cout << "H" <<endl;
+			}
 			for(long int i=0; i<contigLengths[curContig]; i++) {
 				map<int,pair<bool, double> > :: iterator it = M.find(i);
 				if(it != M.end()) {
@@ -84,6 +87,90 @@ void calculateProbability() {
 	}
 	inFile.close();
 	cout<<"LoopNo: "<<loopNo;
+}
+*/
+
+void calculateProbability(){
+    cout << "Initiating calculate probability" << endl;
+    ifstream input("infoOutput1.txt");
+    ofstream output("mean.txt");
+
+    double probability;
+    int position, contigNumber;
+    map<int, vector<double> > mapOfProbabilitiesToPosition;
+    map<int, double> mapOfSingleProbabilityToPosition;
+    map<int, int> mapOfContigCountToPosition;
+
+    while(! input.eof()) {
+        while(input >> contigNumber >> position >> probability) {
+            int lengthOfContig = contigLengths[contigNumber];
+            int startPosition = position;
+            int endPosition = position + lengthOfContig - 1;
+
+            mapOfContigCountToPosition[startPosition]++;
+            mapOfContigCountToPosition[endPosition + 1]--;
+
+            if(mapOfProbabilitiesToPosition.find(startPosition) != mapOfProbabilitiesToPosition.end()) {
+                mapOfProbabilitiesToPosition[startPosition].push_back(probability);
+            }else {
+                vector<double> v;
+                v.push_back(probability);
+                mapOfProbabilitiesToPosition[startPosition] = v;
+            }
+
+            if(mapOfProbabilitiesToPosition.find(endPosition + 1) != mapOfProbabilitiesToPosition.end()) {
+                mapOfProbabilitiesToPosition[endPosition + 1].push_back(-probability);
+            }else {
+                vector<double> v;
+                v.push_back(-probability);
+                mapOfProbabilitiesToPosition[endPosition + 1] = v;
+            }
+        }
+    }
+    cout << mapOfProbabilitiesToPosition.size() << endl;
+
+
+    for(map<int, vector<double> > :: iterator it= mapOfProbabilitiesToPosition.begin(); it!= mapOfProbabilitiesToPosition.end(); it++) {
+        int pos = it->first;
+        vector <double> v = it->second;
+        mapOfSingleProbabilityToPosition[pos] = accumulate(v.begin(),v.end(), 0.0);
+
+//        output << pos << endl;
+//        for(int i=0;i<v.size();i++) {
+//            output << v[i] << endl;
+//        }
+//        output <<"~~~~~~~~~~" << endl;
+//        output << mapOfSingleProbabilityToPosition[pos] << endl;
+
+    }
+    double cumulativeProbability = 0.0;
+    int cumulativeReadCount = 0;
+    map <int, pair<int, double> > mapOfProbabilityToReadCountToPosition;
+    for(map<int, double> :: iterator it=mapOfSingleProbabilityToPosition.begin(); it!= mapOfSingleProbabilityToPosition.end();it++) {
+        int pos = it->first;
+        double startingProbability = it->second;
+        int readCountInThisPosition = mapOfContigCountToPosition[pos];
+        cumulativeProbability += startingProbability;
+        cumulativeReadCount += readCountInThisPosition;
+        mapOfProbabilityToReadCountToPosition[pos] = make_pair(cumulativeReadCount, cumulativeProbability);
+    }
+//    int totalOverlappingContigCountInAParticularPosition = 0;
+//    map<int,int> mapOf
+//    for(map<int,int> :: iterator it=mapOfContigCountToPosition.begin(); it!= mapOfContigCountToPosition.end(); it++) {
+//        int pos = it->first;
+//        int count = it->second;
+//
+//        mapOfContigCountToPosition[pos]
+//    }
+
+    for(map<int, pair<int, double> >:: iterator it= mapOfProbabilityToReadCountToPosition.begin();it!=mapOfProbabilityToReadCountToPosition.end();it++) {
+        int pos = it->first;
+        int readCount = it->second.first;
+        double summationOfProbabilities = it->second.second;
+        output << "position : " << pos << ", readCount: " << readCount << ", summationOfProb: " << summationOfProbabilities << ", mean: "<< (summationOfProbabilities / readCount) << endl;
+    }
+    cout << "Done" << endl;
+
 }
 double computeLikelihood(const char *file) {
 	mapFile=fopen(file, "r");
@@ -185,6 +272,7 @@ double computeLikelihood(const char *file) {
 			cigarMap2[pos2] = cigar2;
 			readMap1[pos1] = readString1;
 			readMap2[pos2] = readString2;
+
 			createInfo(qname1, errorProb1, pos1, contigField1, readString1, multiMapProb1);
 			createInfo(qname2, errorProb2, pos2, contigField2, readString2, multiMapProb2);
 		}
@@ -196,8 +284,9 @@ double computeLikelihood(const char *file) {
 			elseIfCount ++;
 			logsum+=log(sum);
 			///edited
-			writeInfoToFile(multiMapProb1, cigarMap1, readMap1, true);
-			writeInfoToFile(multiMapProb2, cigarMap2, readMap2, false);
+
+			writeInfoToFile(multiMapProb1, cigarMap1, readMap1);
+			writeInfoToFile(multiMapProb2, cigarMap2, readMap2);
 			if(bsCollection1.size()>10) {
 				writeBsToFile(bsCollection1,fileCount++);
 			}
@@ -214,6 +303,7 @@ double computeLikelihood(const char *file) {
 			cigarMap2[pos2] = cigar2;
 			readMap1[pos1] = readString1;
 			readMap2[pos2] = readString2;
+
 			createInfo(qname1, errorProb1, pos1, contigField1, readString1, multiMapProb1);
 			createInfo(qname2, errorProb2, pos2, contigField2, readString2, multiMapProb2);
 			createBs(pos1, readString1, cigar1, bsCollection1);
@@ -260,8 +350,7 @@ int main(int argc, char *argv[]) {
 	provideHelp(argc, argv);
 	contigFileName=argv[1];
 	/// edited
-	infoFile1.open("info1.txt");
-	infoFile2.open("info2.txt");
+	infoFile.open("info1.txt");
 	contigFile=fopen(contigFileName, "r");
 	outFile=fopen("out.txt", "w");
 	if (contigFile == NULL) {
@@ -425,8 +514,8 @@ int main(int argc, char *argv[]) {
 	*/
 	double val1=computeLikelihood(mapFileName);
 	/// edited ///
-	infoFile1.close();
-	infoFile2.close();
+	infoFile.close();
+
 	unixSort();
 	calculateProbability();
 	printGlobalMapData();
